@@ -1,0 +1,11 @@
+streamlit
+torch
+torchvision
+matplotlib
+pandas
+plotly
+pillow
+diffusers
+transformers
+accelerate
+safetensors
