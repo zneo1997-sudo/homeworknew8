@@ -64,42 +64,111 @@ FASHION_LABELS = [
 ]
 
 
-import os
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-
-def setup_chinese_font():
-    font_candidates = [
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
-        "C:/Windows/Fonts/msyh.ttc",
-        "C:/Windows/Fonts/simhei.ttf",
+# =========================
+# 中文字体与页面样式
+# =========================
+def setup_chinese_font() -> str:
+    """
+    尽量自动寻找可用中文字体，避免 matplotlib 图片标题出现口口口。
+    在 Windows / macOS / Linux / Streamlit Cloud 上都做了兼容。
+    """
+    preferred_names = [
+        "Microsoft YaHei",
+        "SimHei",
+        "Noto Sans CJK SC",
+        "Noto Sans CJK JP",
+        "WenQuanYi Micro Hei",
+        "PingFang SC",
+        "Heiti SC",
+        "Arial Unicode MS",
+        "Source Han Sans CN",
+        "DejaVu Sans",
     ]
 
-    selected_font = None
-    for font_path in font_candidates:
-        if os.path.exists(font_path):
-            selected_font = font_path
-            break
+    installed = {f.name: f.fname for f in font_manager.fontManager.ttflist}
+    for name in preferred_names:
+        if name in installed:
+            plt.rcParams["font.sans-serif"] = [name, "DejaVu Sans"]
+            plt.rcParams["axes.unicode_minus"] = False
+            matplotlib.rcParams["font.family"] = "sans-serif"
+            return name
 
-    if selected_font:
-        fm.fontManager.addfont(selected_font)
-        font_prop = fm.FontProperties(fname=selected_font)
-        plt.rcParams["font.family"] = font_prop.get_name()
-        plt.rcParams["font.sans-serif"] = [font_prop.get_name()]
-    else:
-        plt.rcParams["font.sans-serif"] = [
-            "Noto Sans CJK SC",
-            "WenQuanYi Zen Hei",
-            "Microsoft YaHei",
-            "SimHei",
-            "Arial Unicode MS",
-        ]
+    # 尝试常见字体文件路径
+    candidate_paths = [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+        "C:/Windows/Fonts/msyh.ttc",
+        "C:/Windows/Fonts/simhei.ttf",
+        "/System/Library/Fonts/PingFang.ttc",
+    ]
+    for path in candidate_paths:
+        if os.path.exists(path):
+            font_manager.fontManager.addfont(path)
+            prop = font_manager.FontProperties(fname=path)
+            name = prop.get_name()
+            plt.rcParams["font.sans-serif"] = [name, "DejaVu Sans"]
+            plt.rcParams["axes.unicode_minus"] = False
+            matplotlib.rcParams["font.family"] = "sans-serif"
+            return name
 
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
     plt.rcParams["axes.unicode_minus"] = False
+    return "DejaVu Sans"
 
-setup_chinese_font()
+
+FONT_NAME = setup_chinese_font()
+
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+        max-width: 1420px;
+    }
+    .main-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: .25rem;
+    }
+    .sub-title {
+        color: #64748b;
+        font-size: 1.02rem;
+        margin-bottom: 1rem;
+    }
+    .metric-card {
+        border: 1px solid rgba(148,163,184,.28);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(248,250,252,.86));
+        box-shadow: 0 8px 24px rgba(15,23,42,.06);
+    }
+    .soft-card {
+        border: 1px solid rgba(148,163,184,.25);
+        border-radius: 20px;
+        padding: 1.1rem 1.2rem;
+        background: rgba(248,250,252,.70);
+        margin-bottom: 1rem;
+    }
+    .hint {
+        color: #64748b;
+        font-size: .92rem;
+    }
+    div[data-testid="stTabs"] button {
+        font-size: .98rem;
+        font-weight: 650;
+    }
+    .stButton>button {
+        border-radius: 14px;
+        font-weight: 700;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # =========================
 # 通用工具
